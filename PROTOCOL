@@ -1,0 +1,48 @@
+Program serwera ma stale otwarte 2 kolejki komunikatow - jedna do obslugi zapytan zwiazanych z logowaniem/rejestracja, druga do obslugi pozostalych zapytan. Kiedy jest taka potrzeba to jest tworzona kolejka komunikatow, ktorej odbiorca jest program klienta - albo taka do obsulgi stanu zalogowania uzytkownika, albo taka obslugujaca odbieranie wiadomosci (i wyjatkowo czasem sama nazwe tematu). Ta pierwsza jest usuwana zaraz po aktualizacji stanu zalogowania, a ta druga nie jest usuwana nigdy, zeby moc otrzymywac wiadomosci bez wzgledu na stan zalogowania. 
+
+Do obsulgi tych kolejek sa 3 struktury:
+
+struct logpasbuf{
+	long typ;
+	int pid;
+	char log[128];
+	char pass[128];
+}
+	
+struct czyokbuf{
+	long typ;
+	int ok;
+}
+
+struct wiadomosc{
+	long typ;
+	char temat[128];
+	char co[512];
+	char kto[128];
+	int ktokey;
+	int priorytet;
+}
+
+
+Struktura logpasbuf sluzy do wyslania zapytania do serwera zwiazanego z logowaniem/rejestracja
+-typ mowi czy chcemy sie zalogowac czy zarejestrowac nowego uzytkownika
+-pid zawiera pid procesu klienta, tak aby moc wyslac mu odpowiedz zwrotna
+-log zawiera login uzytkownika
+-pass zawiera haslo uzytkownika
+
+Struktura czyokbuf sluzy do odpowiedzi zwrotna na zapytanie logowania
+-ok jesli jest 0 to nie udalo sie zalogowac, w przeciwnym wypadku zawiera unikalny identyfikator zalogowanego uzytkownika
+
+Struktura wiadomosc sluzy do wysylania do serwera pozostalych zapytan, odbierania wiadomosci i w szczegolnym wypadku odbierania samego tematu
+-typ:
+	-3 dodawanie nowego tematu
+	-4 subskrybowanie tematu
+	-5 blokowanie odbieranie wiadomosci od jakiegos uzytkownika
+	-6 wysylanie wiadomosci
+	-8 prosba o podanie tematow / odbior tematow
+	-10-29 wiadomosc o priorytecie 0-19 (przy czym 0 jest tak wazne, ze az odbierana asynchronicznie, a reszta w kolejnosci rosnacej. czyli im mniejsza liczba tym wiekszy priorytet)
+-temat temat wiadomosci
+-co tresc wiadomosci
+-kto nazwa uzytkownika wysylajacego wiadomosc
+-ktokey identyfikator uzytkwnika wyslajacego
+-priorytet priorytet wiadomosci

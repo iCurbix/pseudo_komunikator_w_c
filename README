@@ -1,0 +1,9 @@
+Jest to konsolowy komunikator działający na kolejkach komunikatów. Działanie zostanie opisane wkrótce.
+
+
+Aby skompilowac projekt nalezy uzyc komendy make.
+
+Aby uruchomic program serwera nalezy odpalic program o nazwie 's'.
+
+Aby uruchomic program klienta nalezy odpalic program o nazwie 'k'.
+
